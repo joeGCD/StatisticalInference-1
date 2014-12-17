@@ -1,0 +1,36 @@
+---
+title: "simulation_exercise"
+output: html_document
+---
+
+This is an excercise to simulate exponential distribution.
+
+```{r}
+library(ggplot2)
+## exponential distribution rate parameter
+lambda <- 0.2
+
+## sample size
+n <- 40
+
+## number of observation
+obs <- 1000
+
+## calculate the means of 1000 observation
+means <- NULL
+for (i in 1 : obs) means <- c(means, mean(rexp(n, lambda)))
+
+```
+
+Below histogram shows distribution frequency of means of all observations.
+```{r}
+hist(means)
+```
+
+Below plot shows distribution of means of all observations.
+```{r}
+g <- ggplot(data.frame(x = 1:obs, y = means), aes(x = x, y = y)) 
+g <- g + geom_hline(yintercept = 1/lambda) + geom_line(size = 2, color='red')
+g <- g + labs(x = "Number of obs", y = "Mean")
+g
+```
