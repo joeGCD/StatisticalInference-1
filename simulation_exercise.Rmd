@@ -14,31 +14,49 @@ lambda <- 0.2
 n <- 40
 
 ## number of observation
-obs <- 1000
+obs <- 100000
 
-## calculate the means/variances of 1000 observations
+## calculate the sample means/variances of 1000 observations
 means <- NULL
 samples <- NULL
-for (i in 1 : obs) {
+svars <- NULL
+for (i in 1:obs) {
   samples <- rexp(n, lambda)
-  means <- c(means, mean(samples))
-  }
-
-## calculate the sample variance of 1000 observation
+  sample_mean <- mean(samples)
+  means <- c(means, sample_mean)
+  tmp <- 0
+  for (j in 1:n) {
+      tmp <- tmp + (samples[j] - sample_mean)^2/(n-1)
+      }
+  svars <- c(svars, tmp)
+}
 
 ```
 
-1. Show where the distribution is centered at and compare it to the theoretical center of the distribution.  
+Task 1: Show where the distribution is centered at and compare it to the theoretical center of the distribution.  
 
-Below histogram plots distribution frequency of means of all observations. It shows that the distribution is centered at 5, which is the theoretical center of distribution (mean of exponential distribution = 1/lambda  = 1/0.2 = 5)  
+Below histogram plots distribution frequency of means of all observations. It shows that the distribution is centered at around 5, which is the theoretical center of distribution (mean of exponential distribution = 1/lambda  = 1/0.2 = 5)  
 
 ```{r}
-hist(means)
+##hist(means, main="Histogram of Sample Mean for Exponential Distribution", xlab="Sample Mean")
+g <- ggplot(data.frame(x = means), aes(x)) 
+g <- g + geom_vline(xintercept = 1/lambda, color='red') + geom_histogram()
+g <- g + labs(x = "Sample Mean", y = "Counts") + ggtitle("Histogram of Sample Mean for Exponential Distribution")
+g
 ```
 
-2. Show how variable it is and compare it to the theoretical variance of the distribution, which is (1/lambda)^2 = 25
+Task 2: Show how variable it is and compare it to the theoretical variance of the distribution, which is (1/lambda)^2 = 25
 
+Below histogram plots distribution frequency of sample variance of all observations. It shows that the distribution is centered at around 25, which is the theoretical variance of the distribution.   
 
+```{r}
+g <- ggplot(data.frame(x = svars), aes(x)) 
+g <- g + geom_vline(xintercept = (1/lambda)^2, color='red') + geom_histogram()
+g <- g + labs(x = "Sample Variance", y = "Counts") + ggtitle("Histogram of Sample Variance for Exponential Distribution")
+g
+```
+
+Task 3: Show that the distribution is approximately normal
 ```{r}
 g <- ggplot(data.frame(x = 1:obs, y = means), aes(x = x, y = y)) 
 g <- g + geom_hline(yintercept = 1/lambda, color='red') + geom_line(size = 1)
