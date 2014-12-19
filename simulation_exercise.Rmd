@@ -1,65 +1,81 @@
 ---
-title: "simulation_exercise"
+title: "Simulation Exercise"
 output: html_document
 ---
 
-This is an excercise to simulate exponential distribution and run analysis on properties of the distribution of the mean of 40 exponential(0.2)s
+This is an excercise to simulate exponential distribution and run analysis on properties of the distribution of the mean of exponential(0.2)s.    
 
-```{r}
+```{r echo=FALSE}
 library(ggplot2)
-## exponential distribution rate parameter
-lambda <- 0.2
 
-## sample size
-n <- 40
-
-## number of observation
-obs <- 100000
-
-## calculate the sample means/variances of 1000 observations
-means <- NULL
-samples <- NULL
-svars <- NULL
-for (i in 1:obs) {
-  samples <- rexp(n, lambda)
-  sample_mean <- mean(samples)
-  means <- c(means, sample_mean)
-  tmp <- 0
-  for (j in 1:n) {
-      tmp <- tmp + (samples[j] - sample_mean)^2/(n-1)
-      }
-  svars <- c(svars, tmp)
+## function for calculating sample mean and variance of exponential distribution
+## n: sample size; obs: number of observation
+cal_mean_var <- function (n, obs, lambda) {
+  samples <- NULL
+  means <- NULL
+  vars <- NULL
+  for (i in 1:obs) {
+    samples <- rexp(n, lambda)
+    sample_mean <- mean(samples)
+    means <- c(means, sample_mean)
+    tmp <- 0
+    for (j in 1:n) tmp <- tmp + (samples[j] - sample_mean)^2/(n-1)
+    vars <- c(vars, tmp)
+  }
+  mean_var <- list(means=means, variances=vars)
 }
 
+## calculate the sample means/variances of 1000 observations of 40 exponentials(0.2)
+nosim <- 10000
+means_var_40 <- cal_mean_var(40, nosim, 0.2)
+means_40 <- means_var_40$means
+vars_40 <- means_var_40$variances
+
+## calculate the sample means/variances of 1000 observations of 70 exponentials(0.2)
+means_var_70 <- cal_mean_var(70, nosim, 0.2)
+means_70 <- means_var_70$means
+vars_70 <- means_var_70$variances
+
+## calculate the sample means/variances of 1000 observations of 100 exponentials(0.2)
+means_var_100 <- cal_mean_var(100, nosim, 0.2)
+means_100 <- means_var_100$means
+vars_100 <- means_var_100$variances
+
+dat <- data.frame(
+  x = c(means_40, means_70, means_100),
+  size = factor(rep(c(40, 70, 100), rep(nosim, 3)))
+)
 ```
 
-Task 1: Show where the distribution is centered at and compare it to the theoretical center of the distribution.  
+###Task 1: Show where the distribution is centered at and compare it to the theoretical center of the distribution.  
 
 Below histogram plots distribution frequency of means of all observations. It shows that the distribution is centered at around 5, which is the theoretical center of distribution (mean of exponential distribution = 1/lambda  = 1/0.2 = 5)  
 
 ```{r}
-##hist(means, main="Histogram of Sample Mean for Exponential Distribution", xlab="Sample Mean")
-g <- ggplot(data.frame(x = means), aes(x)) 
+g <- ggplot(data.frame(x = means_40), aes(x)) 
 g <- g + geom_vline(xintercept = 1/lambda, color='red') + geom_histogram()
-g <- g + labs(x = "Sample Mean", y = "Counts") + ggtitle("Histogram of Sample Mean for Exponential Distribution")
+g <- g + labs(x = "Sample Mean", y = "Counts") + ggtitle("Histogram of Sample Mean for 40 Exponential Distribution")
 g
 ```
 
-Task 2: Show how variable it is and compare it to the theoretical variance of the distribution, which is (1/lambda)^2 = 25
+###Task 2: Show how variable it is and compare it to the theoretical variance of the distribution, which is (1/lambda)^2 = 25.
 
 Below histogram plots distribution frequency of sample variance of all observations. It shows that the distribution is centered at around 25, which is the theoretical variance of the distribution.   
 
 ```{r}
-g <- ggplot(data.frame(x = svars), aes(x)) 
+g <- ggplot(data.frame(x = vars_40), aes(x)) 
 g <- g + geom_vline(xintercept = (1/lambda)^2, color='red') + geom_histogram()
-g <- g + labs(x = "Sample Variance", y = "Counts") + ggtitle("Histogram of Sample Variance for Exponential Distribution")
+g <- g + labs(x = "Sample Variance", y = "Counts") + ggtitle("Histogram of Sample Variance for 40 Exponential Distribution")
 g
 ```
 
-Task 3: Show that the distribution is approximately normal
+###Task 3: Show that the distribution is approximately normal.  
+
+Three different sample sizes, 40, 70, 100 were used to generate sample means for exponential distribution. Below plot shows that sample means distribution is appromimately normal and centered at 5.  
+
 ```{r}
-g <- ggplot(data.frame(x = 1:obs, y = means), aes(x = x, y = y)) 
-g <- g + geom_hline(yintercept = 1/lambda, color='red') + geom_line(size = 1)
-g <- g + labs(x = "Number of obs", y = "Mean")
-g
+g <- ggplot(dat, aes(x = x, fill = size)) + 
+  geom_histogram(alpha = .20, binwidth=.3, colour = "black", aes(y = ..density..)) 
+## g <- g + stat_function(fun = dnorm, size = 2)
+g + facet_grid(. ~ size)
 ```
